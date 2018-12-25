@@ -55,7 +55,6 @@ def sets_filter(sets):
         fitness_for_sets.append(fitness(sets[j], genData['items']))
     max_fitness = max(fitness_for_sets)
     for i in range(len(fitness_for_sets)):
-        if (max_fitness != 0):
             fitness_for_sets[i] = fitness_for_sets[i] / max_fitness
             if checking_percent < fitness_for_sets[i]:
                 final_sets.append(sets[i])
@@ -107,6 +106,25 @@ def get_max_fitness_for_sets(sets):
     return max(fitness_for_sets)
 
 
+def get_new_population(children, sets):
+
+    fitness_for_sets = []
+    for j in range(len(sets)):
+        fitness_for_sets.append(fitness(sets[j], genData['items']))
+
+    fitnesses = {}
+
+    for i in range(len(fitness_for_sets)):
+        fitnesses[i] = fitness_for_sets[i]
+
+    fitnesses = sorted(fitnesses.items(), key=lambda item: item[1])
+    
+    for i in range(len(children) if len(children) < len(sets) else len(sets)):
+        current_parent = fitnesses[i]
+        sets[current_parent[0]] = children[i]
+
+    return sets
+
 def init():
     current_sets = first_population()
     max_fitness = get_max_fitness_for_sets(current_sets)
@@ -115,7 +133,7 @@ def init():
         filters_sets = sets_filter(current_sets)
         children = sets_crossingover(filters_sets)
         final_children = mutation(children)
-        current_sets = final_children  # Новая популяция
+        current_sets = get_new_population(final_children, current_sets)  # Новая популяция
         prev_max_fitness = max_fitness
         max_fitness = get_max_fitness_for_sets(current_sets)
         current_percent = abs((max_fitness - prev_max_fitness) / ((max_fitness + prev_max_fitness) / 2)) * 100
